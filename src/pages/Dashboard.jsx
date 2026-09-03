@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { 
-  Search, Loader2, X, Thermometer, Droplets, Wind, Eye, Compass, MapPin, Clock, Mic, MicOff 
+  Search, Loader2, X, Thermometer, Droplets, Wind, Eye, Compass, MapPin, Clock, Mic, MicOff, Calendar 
 } from 'lucide-react';
 import { useRecentSearches } from '../hooks/useRecentSearches';
 import SkeletonCard from '../components/common/SkeletonCard';
@@ -318,6 +318,83 @@ export default function Dashboard() {
     }));
   };
 
+  // ===== GET 5-DAY FORECAST =====
+const getDailyForecast = () => {
+  if (!forecast) return [];
+  
+  const dailyData = {};
+  
+  forecast.list.forEach((item) => {
+    const date = new Date(item.dt * 1000);
+    const dayKey = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
+    
+    if (!dailyData[dayKey]) {
+      dailyData[dayKey] = {
+        date: dayKey,
+        temps: [],
+        icons: [],
+        conditions: [],
+        humidity: [],
+      };
+    }
+    
+    dailyData[dayKey].temps.push(item.main.temp);
+    dailyData[dayKey].icons.push(item.weather[0].icon);
+    dailyData[dayKey].conditions.push(item.weather[0].description);
+    dailyData[dayKey].humidity.push(item.main.humidity);
+  });
+  
+  // Process each day
+  const result = Object.keys(dailyData).slice(0, 5).map((dayKey) => {
+    const day = dailyData[dayKey];
+    const maxTemp = Math.max(...day.temps);
+    const minTemp = Math.min(...day.temps);
+    
+    // Get the most common weather condition
+    const conditionCounts = {};
+    day.conditions.forEach((c) => {
+      conditionCounts[c] = (conditionCounts[c] || 0) + 1;
+    });
+    let mostCommonCondition = day.conditions[0];
+    let maxCount = 0;
+    for (const [condition, count] of Object.entries(conditionCounts)) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommonCondition = condition;
+      }
+    }
+    
+    // Get the most common icon
+    const iconCounts = {};
+    day.icons.forEach((i) => {
+      iconCounts[i] = (iconCounts[i] || 0) + 1;
+    });
+    let mostCommonIcon = day.icons[0];
+    let maxIconCount = 0;
+    for (const [icon, count] of Object.entries(iconCounts)) {
+      if (count > maxIconCount) {
+        maxIconCount = count;
+        mostCommonIcon = icon;
+      }
+    }
+    
+    return {
+      date: dayKey,
+      maxTemp: Math.round(maxTemp),
+      minTemp: Math.round(minTemp),
+      icon: mostCommonIcon,
+      condition: mostCommonCondition,
+      humidity: Math.round(day.humidity.reduce((a, b) => a + b, 0) / day.humidity.length),
+    };
+  });
+  
+  return result;
+};
+
   // ==== Handler for map click
   const handleCityClick = (cityData) => {
     setMapWeather(cityData);
@@ -546,6 +623,41 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
+
+                {/* ===== 5-DAY FORECAST ===== */}
+<div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 text-white border border-white/10 shadow-2xl">
+  <div className="flex items-center gap-2 mb-4">
+    <Calendar className="w-5 h-5 text-white/60" />
+    <h3 className="text-lg font-semibold">5-Day Forecast</h3>
+  </div>
+  <div className="space-y-3">
+    {getDailyForecast().map((day, index) => (
+      <div 
+        key={index}
+        className={`flex items-center justify-between p-3 rounded-xl transition ${
+          index === 0 ? 'bg-white/5 border border-white/5' : 'hover:bg-white/5'
+        }`}
+      >
+        <div className="flex items-center gap-4 min-w-[120px]">
+          <p className="text-sm font-medium min-w-[100px]">{day.date}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <img
+            src={getWeatherIcon(day.icon)}
+            alt={day.condition}
+            className="w-10 h-10"
+          />
+          <p className="text-sm text-white/60 capitalize min-w-[80px]">{day.condition}</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-semibold">{day.maxTemp}{getUnitSymbol()}</span>
+          <span className="text-sm text-white/40">/</span>
+          <span className="text-sm text-white/40">{day.minTemp}{getUnitSymbol()}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
                     {/* WeatherMap */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
