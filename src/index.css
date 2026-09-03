@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Custom base styles */
+@layer base {
+  body {
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+}
+
+/* Smooth transitions for weather changes */
+.weather-transition {
+  transition: all 0.5s ease-in-out;
+}
