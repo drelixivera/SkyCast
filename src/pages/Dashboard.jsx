@@ -13,6 +13,7 @@ import SkeletonCard from '../components/common/SkeletonCard';
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 import WeatherMap from '../components/weather/WeatherMap';
+import WeatherAlerts from '../components/weather/WeatherAlerts';
 
 export default function Dashboard() {
   const [city, setCity] = useState('');
@@ -602,6 +603,13 @@ const getDailyForecast = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Weather Alerts */}
+                {weather && (
+                  <div className="mt-6">
+                    <WeatherAlerts cityName={weather.name} />
+                  </div>
+                )}
 
                 {/* Hourly Forecast */}
                 <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 text-white border border-white/10 shadow-2xl">
