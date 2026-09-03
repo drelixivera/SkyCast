@@ -12,3 +12,6 @@
 .weather-transition {
   transition: all 0.5s ease-in-out;
 }
+
+/* Leaflet CSS for maps */
+@import "leaflet/dist/leaflet.css";

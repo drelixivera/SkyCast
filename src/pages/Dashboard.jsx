@@ -12,6 +12,7 @@ import SkeletonCard from '../components/common/SkeletonCard';
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+import WeatherMap from '../components/weather/WeatherMap';
 
 export default function Dashboard() {
   const [city, setCity] = useState('');
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const { recentSearches, addSearch, clearSearches } = useRecentSearches();
+  const [mapWeather, setMapWeather] = useState(null); //state for map
   
   const recognitionRef = useRef(null);
   const inputRef = useRef(null);
@@ -316,6 +318,13 @@ export default function Dashboard() {
     }));
   };
 
+  // ==== Handler for map click
+  const handleCityClick = (cityData) => {
+    setMapWeather(cityData);
+    // update main weather display
+    setWeather(cityData)
+  };
+
   // ===== RENDER =====
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -537,6 +546,18 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
+
+                    {/* WeatherMap */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                    <div className="lg:col-span-2">
+                      <WeatherMap 
+                        weatherData={weather || mapWeather}
+                        isLoading={loading || isLocating}
+                        onCityClick={handleCityClick}
+                      />
+                    </div>
+                  </div>  
+
               </div>
             </div>
           ) : (
